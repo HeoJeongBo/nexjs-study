@@ -1,3 +1,4 @@
+import { GetStaticProps } from 'next';
 import { useEffect, useState } from 'react';
 import useSWR from 'swr';
 
@@ -7,8 +8,12 @@ interface Sale {
     id: string;
 }
 
-const LastSales: React.FC = () => {
-    const [sales, setSales] = useState<Sale[]>([]);
+interface LastSalesProps {
+    sales: Sale[];
+}
+
+const LastSales: React.FC<LastSalesProps> = ({ sales: initialSales }) => {
+    const [sales, setSales] = useState<Sale[]>(initialSales);
 
     const { data, error } = useSWR(
         'https://nextjs-study-dummy-default-rtdb.firebaseio.com/sales.json',
@@ -35,7 +40,7 @@ const LastSales: React.FC = () => {
         return <p>Failed to load.</p>;
     }
 
-    if (!data || !sales) {
+    if (!data && !sales) {
         return <p>Loading ....</p>;
     }
 
@@ -50,6 +55,28 @@ const LastSales: React.FC = () => {
             </ul>
         </div>
     );
+};
+
+export const getStaticProps: GetStaticProps<LastSalesProps> = async () => {
+    const response = await fetch(
+        'https://nextjs-study-dummy-default-rtdb.firebaseio.com/sales.json'
+    );
+    const data: { [key: string]: Sale } = await response.json();
+
+    const transformedSales: Sale[] = [];
+
+    for (const key in data) {
+        transformedSales.push({
+            id: key,
+            username: data[key].username,
+            volume: data[key].volume,
+        });
+    }
+
+    return {
+        props: { sales: transformedSales },
+        revalidate: 10,
+    };
 };
 
 export default LastSales;
