@@ -1,7 +1,7 @@
 import { GetStaticPaths, GetStaticProps } from 'next';
 import fs from 'fs/promises';
 import path from 'path';
-import { Product } from './';
+import { Product } from '..';
 
 interface ProductDetailProps {
     product: Product | undefined;
@@ -24,6 +24,7 @@ async function getData() {
     const filePath = path.join(process.cwd(), 'data', 'dummy-backend.json');
     const jsonData = await fs.readFile(filePath);
 
+    console.log('dataFetch !!!!');
     const data: { products: Product[] } = JSON.parse(jsonData.toString());
 
     return data;
